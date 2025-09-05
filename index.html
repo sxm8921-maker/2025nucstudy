@@ -1,89 +1,667 @@
 <!DOCTYPE html>
-<html>
-	<head>
-		<meta charset="utf-8" />
-		<title>个人社保计算软件</title>
-		  <meta name="viewport" content="width=device-width, initial-scale=1">
-		<!-- 新 Bootstrap5 核心 CSS 文件 -->
-		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.1.3/css/bootstrap.min.css">
-		 
-		<!-- 最新的 Bootstrap5 核心 JavaScript 文件 -->
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
-	</head>
-	<body>
-		<div class="container text-center">
-			<h2>个人社保计算软件</h2>
-			<table class="table table-bordered text-center">
-				<tr>
-					<td>工资</td>
-					<td colspan="3">
-						<input type="text" class="form-control" id="salary" placeholder="请输入工资"/>
-						
-					</td>
-					<td><button class="btn btn-danger">计算</button></td>
-				</tr>
-				<tr class="bg-primary text-white">
-					<td>险种</td>
-					<td>个人%</td>
-					<td>个人</td>
-					<td>公司%</td>
-					<td>公司</td>
-				</tr>
-				<tr>
-					<td>养老</td>
-					<td>8%</td>
-					<td></td>
-					<td>20%</td>
-					<td></td>
-				</tr>
-				<tr>
-					<td>医保</td>
-					<td>2%</td>
-					<td></td>
-					<td>6%</td>
-					<td></td>
-				</tr>
-				<tr>
-					<td>失业</td>
-					<td>0.5%</td>
-					<td></td>
-					<td>1.5%</td>
-					<td></td>
-				</tr>
-				<tr>
-					<td>工伤</td>
-					<td></td>
-					<td></td>
-					<td>0.5%</td>
-					<td></td>
-				</tr>
-				<tr>
-					<td>生育</td>
-					<td></td>
-					<td></td>
-					<td>0.8%</td>
-					<td></td>
-				</tr>
-				<tr>
-					<td>公积金</td>
-					<td>12%</td>
-					<td></td>
-					<td>12%</td>
-					<td></td>
-				</tr>
-				<tr>
-					<td>合计</td>
-					<td>个人合计</td>
-					<td></td>
-					<td>公司合计</td>
-					<td></td>
-				</tr>
-				<tr>
-					<td>总额</td>
-					<td colspan="4"></td>
-				</tr>
-			</table>
-		</div>
-		
-	</body>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>个人社保和公积金计算器</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* 全局统一动画曲线 */
+        :root {
+            --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
+            --spring-bezier: cubic-bezier(0.4, 0.0, 0.2, 1.2);
+            --modal-spring-bezier: cubic-bezier(0.2, 0.8, 0.4, 1.1);
+            --fast-spring: cubic-bezier(0.68, -0.55, 0.27, 1.55);
+
+            /* 统一圆角系统 */
+            --border-radius-sm: 8px;
+            --border-radius-md: 12px;
+            --border-radius-lg: 16px;
+            --border-radius-xl: 20px;
+        }
+
+        /* 背景动画效果 */
+        @keyframes bg-animation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        body {
+            font-family: 'SF Pro Display', 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(-45deg, #1d1d1f, #2c3e50, #34495e, #1c2833);
+            background-size: 400% 400%;
+            animation: bg-animation 15s ease infinite;
+            overflow-x: hidden;
+        }
+
+        /* 玻璃拟态效果核心样式 */
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.15);
+            -webkit-backdrop-filter: blur(20px) saturate(200%);
+            backdrop-filter: blur(20px) saturate(200%);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+            border-radius: var(--border-radius-xl);
+            transition: all 0.3s var(--spring-bezier);
+        }
+        .glass-effect:hover {
+            box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.2);
+            transform: translateY(-5px);
+        }
+
+        .calculator-container {
+            max-width: 800px;
+            padding: 35px;
+            animation: slideIn 0.8s var(--ease-out-expo) forwards;
+            opacity: 0;
+            position: relative;
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        h2 {
+            text-align: center;
+            color: #fff;
+            font-weight: 600;
+            margin-bottom: 30px;
+            letter-spacing: -0.5px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Input Group and Buttons */
+        .input-group-custom {
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+        }
+        .input-group-custom label {
+            min-width: 150px;
+            margin-right: 15px;
+            font-weight: 500;
+            color: #fff;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* 隐藏默认的数字输入框按钮 */
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+
+        /* 输入框和其自定义按钮的包裹容器 */
+        .input-field-wrapper {
+            position: relative;
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+        }
+        
+        .input-group-custom .form-control {
+            border-radius: var(--border-radius-md);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            padding: 12px 15px;
+            flex-grow: 1;
+            transition: all 0.3s var(--ease-out-expo);
+            z-index: 1;
+            height: 48px;
+        }
+        .input-group-custom .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        .input-group-custom .form-control:focus {
+            border-color: #007aff;
+            box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.2);
+            outline: none;
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        /* 新的输入框内嵌按钮样式 */
+        .input-field-wrapper:hover .form-control,
+        .input-field-wrapper .form-control:focus {
+            padding-right: 48px;
+        }
+        
+        .input-controls {
+            position: absolute;
+            right: -20px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            opacity: 0;
+            transition: all 0.3s var(--ease-out-expo);
+            z-index: 2;
+        }
+        
+        .input-field-wrapper:hover .input-controls,
+        .input-field-wrapper .form-control:focus ~ .input-controls {
+            opacity: 1;
+            right: 8px;
+        }
+
+        .input-controls .control-btn {
+            background: rgba(0, 0, 0, 0.2);
+            border: none;
+            color: rgba(255, 255, 255, 0.8);
+            width: 28px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s var(--fast-spring);
+            border-radius: var(--border-radius-sm);
+            padding: 0;
+        }
+        .input-controls .control-btn:hover {
+            background: rgba(0, 0, 0, 0.4);
+            color: #fff;
+        }
+        .input-controls .control-btn:active {
+            transform: scale(0.9);
+            background: rgba(0, 0, 0, 0.6);
+        }
+        
+        .btn {
+            font-weight: 500;
+            padding: 12px 24px;
+            border-radius: var(--border-radius-md);
+            border: none;
+            transition: all 0.3s var(--spring-bezier);
+            letter-spacing: -0.2px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            height: 48px;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+        .btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-calculate {
+            background-color: #007aff;
+            color: #fff;
+        }
+        .btn-calculate:hover {
+            background-color: #0060df;
+        }
+
+        .btn-reset {
+            background-color: rgba(255, 255, 255, 0.3);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+        }
+        .btn-reset:hover {
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Cards and Results */
+        .card {
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: var(--border-radius-lg);
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.15);
+            -webkit-backdrop-filter: blur(20px) saturate(200%);
+            backdrop-filter: blur(20px) saturate(200%);
+            transition: all 0.3s var(--spring-bezier);
+            transform: scale(0.98);
+            animation: card-appear 0.6s var(--ease-out-expo) forwards;
+            opacity: 0;
+            cursor: pointer;
+        }
+        .card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        @keyframes card-appear {
+            from {
+                opacity: 0;
+                transform: scale(0.98);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        .col-md-6:first-child .card { animation-delay: 0.4s; }
+        .col-md-6:last-child .card { animation-delay: 0.6s; }
+
+        .card-header {
+            background: rgba(255, 255, 255, 0.25);
+            color: #fff;
+            font-weight: 600;
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+            font-size: 1.1em;
+            letter-spacing: -0.3px;
+            border-top-left-radius: var(--border-radius-lg);
+            border-top-right-radius: var(--border-radius-lg);
+        }
+        .card-body {
+            padding: 20px;
+        }
+
+        /* 结果行悬停动画 */
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.05rem;
+            padding: 12px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        .result-row::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius-sm);
+            transform: translateX(-100%);
+            transition: transform 0.3s var(--spring-bezier);
+            z-index: -1;
+        }
+        .result-row:hover::before {
+            transform: translateX(0);
+        }
+        .result-row:last-child {
+            border-bottom: none;
+        }
+        
+        /* 模态框样式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(0px);
+            -webkit-backdrop-filter: blur(0px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s var(--ease-out-expo), backdrop-filter 0.5s var(--ease-out-expo);
+            z-index: 100;
+        }
+        .modal-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+        }
+        .modal-content {
+            background: rgba(255, 255, 255, 0.2);
+            -webkit-backdrop-filter: blur(0px) saturate(200%);
+            backdrop-filter: blur(0px) saturate(200%);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: var(--border-radius-xl);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            width: 90%;
+            max-width: 600px;
+            padding: 30px;
+            transform: scale(0.9);
+            opacity: 0;
+            transition: all 0.5s var(--modal-spring-bezier);
+            position: relative;
+            overflow: hidden;
+        }
+        .modal-content.visible {
+            opacity: 1;
+            transform: scale(1);
+            -webkit-backdrop-filter: blur(30px) saturate(200%);
+            backdrop-filter: blur(30px) saturate(200%);
+        }
+        .modal-content .card-header {
+            background: rgba(255, 255, 255, 0.4);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+            border-top-left-radius: var(--border-radius-lg);
+            border-top-right-radius: var(--border-radius-lg);
+        }
+        .modal-content .result-row::before {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 2rem;
+            color: #fff;
+            cursor: pointer;
+            opacity: 0.8;
+            transition: opacity 0.2s ease;
+            z-index: 101;
+        }
+        .modal-close:hover {
+            opacity: 1;
+        }
+        
+        .total-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+        }
+        .total-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .total-label {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 5px;
+        }
+        .total-amount {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        .total-amount .unit-col {
+            font-size: 0.8em;
+            font-weight: 500;
+            margin-left: 5px;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-content" id="modalContent">
+            <span class="modal-close" onclick="closeModal(event)">&times;</span>
+        </div>
+    </div>
+
+    <div class="container calculator-container glass-effect">
+        <h2>个人社保和公积金计算器</h2>
+        <div class="input-group-custom">
+            <label for="salary" class="form-label mb-0">请输入您的税前工资:</label>
+            <div class="input-field-wrapper">
+                <input type="number" class="form-control" id="salary" placeholder="请输入工资金额" min="0" step="100" onkeydown="if(event.key === 'Enter') calc()">
+                <div class="input-controls">
+                    <div class="control-btn" onclick="adjustSalary(100)">
+                        <i class="fas fa-plus"></i>
+                    </div>
+                    <div class="control-btn" onclick="adjustSalary(-100)">
+                        <i class="fas fa-minus"></i>
+                    </div>
+                </div>
+            </div>
+            <button onclick="calc()" class="btn btn-calculate ms-2">计算</button>
+            <button onclick="resetFields()" class="btn btn-reset ms-2">重置</button>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6" id="personal-card-wrapper">
+                <div class="card" onclick="openModal('personal-card-wrapper')">
+                    <div class="card-header">个人缴纳部分</div>
+                    <div class="card-body">
+                        <div class="result-row">
+                            <span class="label-col">养老保险 (8%):</span>
+                            <span class="value-col" id="ylgr">0.00</span><span class="unit-col">元</span>
+                        </div>
+                        <div class="result-row">
+                            <span class="label-col">医疗保险 (2%):</span>
+                            <span class="value-col" id="ybgr">0.00</span><span class="unit-col">元</span>
+                        </div>
+                        <div class="result-row">
+                            <span class="label-col">失业保险 (0.5%):</span>
+                            <span class="value-col" id="sygr">0.00</span><span class="unit-col">元</span>
+                        </div>
+                        <div class="result-row">
+                            <span class="label-col">住房公积金 (12%):</span>
+                            <span class="value-col" id="gjjgr">0.00</span><span class="unit-col">元</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6" id="company-card-wrapper">
+                <div class="card" onclick="openModal('company-card-wrapper')">
+                    <div class="card-header">公司缴纳部分</div>
+                    <div class="card-body">
+                        <div class="result-row">
+                            <span class="label-col">养老保险 (20%):</span>
+                            <span class="value-col" id="ylgs">0.00</span><span class="unit-col">元</span>
+                        </div>
+                        <div class="result-row">
+                            <span class="label-col">医疗保险 (6%):</span>
+                            <span class="value-col" id="ybgs">0.00</span><span class="unit-col">元</span>
+                        </div>
+                        <div class="result-row">
+                            <span class="label-col">失业保险 (1.5%):</span>
+                            <span class="value-col" id="sygs">0.00</span><span class="unit-col">元</span>
+                        </div>
+                        <div class="result-row">
+                            <span class="label-col">工伤保险 (0.5%):</span>
+                            <span class="value-col" id="gsgs">0.00</span><span class="unit-col">元</span>
+                        </div>
+                        <div class="result-row">
+                            <span class="label-col">生育保险 (0.8%):</span>
+                            <span class="value-col" id="sy1gs">0.00</span><span class="unit-col">元</span>
+                        </div>
+                        <div class="result-row">
+                            <span class="label-col">住房公积金 (12%):</span>
+                            <span class="value-col" id="gjjgs">0.00</span><span class="unit-col">元</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="total-section">
+            <div class="row">
+                <div class="col-md-4 total-item">
+                    <div class="total-label">个人合计</div>
+                    <div class="total-amount"><span id="grhj">0.00</span><span class="unit-col">元</span></div>
+                </div>
+                <div class="col-md-4 total-item">
+                    <div class="total-label">公司合计</div>
+                    <div class="total-amount"><span id="gshj">0.00</span><span class="unit-col">元</span></div>
+                </div>
+                <div class="col-md-4 total-item">
+                    <div class="total-label">总额</div>
+                    <div class="total-amount"><span id="ze">0.00</span><span class="unit-col">元</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const modalOverlay = document.getElementById('modalOverlay');
+        const modalContent = document.getElementById('modalContent');
+        let initialCardRect = null;
+        let originalCardContents = {};
+        let animating = false;
+
+        function openModal(cardId) {
+            if (animating) return;
+            animating = true;
+            
+            modalContent.innerHTML = '';
+            const cardWrapper = document.getElementById(cardId);
+            const card = cardWrapper.querySelector('.card');
+            
+            originalCardContents = {
+                'personal-card-wrapper': document.getElementById('personal-card-wrapper').querySelector('.card').innerHTML,
+                'company-card-wrapper': document.getElementById('company-card-wrapper').querySelector('.card').innerHTML
+            };
+
+            initialCardRect = card.getBoundingClientRect();
+
+            modalContent.innerHTML = `<span class="modal-close" onclick="closeModal(event)">&times;</span>${originalCardContents[cardId]}`;
+            
+            // 修复：在添加类前强制浏览器重绘，确保过渡从正确的状态开始
+            modalOverlay.classList.remove('visible');
+            modalContent.classList.remove('visible');
+            void modalOverlay.offsetWidth;
+            
+            modalOverlay.classList.add('visible');
+            modalContent.classList.add('visible');
+
+            document.body.style.overflow = 'hidden';
+
+            const targetWidth = Math.min(600, window.innerWidth * 0.9);
+            const targetHeight = modalContent.offsetHeight;
+            const effectiveTargetHeight = targetHeight > 0 ? targetHeight : initialCardRect.height * (targetWidth / initialCardRect.width);
+
+            const scaleX = initialCardRect.width / targetWidth;
+            const scaleY = initialCardRect.height / effectiveTargetHeight;
+            
+            const translateX = initialCardRect.left + initialCardRect.width / 2 - window.innerWidth / 2;
+            const translateY = initialCardRect.top + initialCardRect.height / 2 - window.innerHeight / 2;
+
+            modalContent.style.transition = 'none';
+            modalContent.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scaleX}, ${scaleY})`;
+            modalContent.style.opacity = '0';
+            modalContent.style.borderRadius = `${getComputedStyle(card).borderRadius}`;
+            
+            void modalContent.offsetWidth;
+
+            modalContent.style.transition = 'all 0.5s var(--modal-spring-bezier)';
+            modalContent.style.transform = 'translate(0, 0) scale(1)';
+            modalContent.style.opacity = '1';
+            modalContent.style.borderRadius = 'var(--border-radius-xl)';
+            
+            modalContent.addEventListener('transitionend', () => {
+                animating = false;
+            }, { once: true });
+        }
+
+        function closeModal(event) {
+            if (event) event.stopPropagation();
+            if (!initialCardRect || animating) return;
+            animating = true;
+
+            const card = document.querySelector('.card');
+            const targetWidth = Math.min(600, window.innerWidth * 0.9);
+            const targetHeight = modalContent.offsetHeight;
+            const effectiveTargetHeight = targetHeight > 0 ? targetHeight : initialCardRect.height * (targetWidth / initialCardRect.width);
+
+            const scaleX = initialCardRect.width / targetWidth;
+            const scaleY = initialCardRect.height / effectiveTargetHeight;
+            const translateX = initialCardRect.left + initialCardRect.width / 2 - window.innerWidth / 2;
+            const translateY = initialCardRect.top + initialCardRect.height / 2 - window.innerHeight / 2;
+
+            modalContent.style.transition = 'all 0.4s var(--modal-spring-bezier)';
+            modalContent.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scaleX}, ${scaleY})`;
+            modalContent.style.opacity = '0';
+            modalContent.style.borderRadius = `${getComputedStyle(card).borderRadius}`;
+            
+            // 修复：使用类控制过渡，而不是直接操作样式
+            modalOverlay.classList.remove('visible');
+            modalContent.classList.remove('visible');
+
+            setTimeout(() => {
+                document.body.style.overflow = 'auto';
+                modalContent.innerHTML = '';
+                animating = false;
+            }, 500); 
+        }
+        
+        modalContent.addEventListener('click', (e) => e.stopPropagation());
+        modalOverlay.addEventListener('click', closeModal);
+
+        function adjustSalary(amount) {
+            const salaryInput = document.getElementById("salary");
+            let currentVal = parseFloat(salaryInput.value) || 0;
+            let newVal = currentVal + amount;
+            if (newVal < 0) {
+                newVal = 0;
+            }
+            salaryInput.value = newVal;
+        }
+
+        function calc(){
+            const salaryInput = document.getElementById("salary");
+            const salary = parseFloat(salaryInput.value);
+            
+            if (isNaN(salary) || salary < 0) {
+                alert("请输入一个有效的工资金额！");
+                salaryInput.focus();
+                return;
+            }
+
+            const ylgr = salary * 0.08;
+            const ylgs = salary * 0.20;
+            const ybgr = salary * 0.02;
+            const ybgs = salary * 0.06;
+            const sygr = salary * 0.005;
+            const sygs = salary * 0.015;
+            const gsgs = salary * 0.005;
+            const sy1gs = salary * 0.008;
+            const gjjgr = salary * 0.12;
+            const gjjgs = salary * 0.12;
+            
+            const grhj = ylgr + ybgr + sygr + gjjgr;
+            const gshj = ylgs + ybgs + sygs + gsgs + sy1gs + gjjgs;
+            const ze = grhj + gshj;
+            
+            document.getElementById("ylgr").innerText = ylgr.toFixed(2);
+            document.getElementById("ylgs").innerText = ylgs.toFixed(2);
+            document.getElementById("ybgr").innerText = ybgr.toFixed(2);
+            document.getElementById("ybgs").innerText = ybgs.toFixed(2);
+            document.getElementById("sygr").innerText = sygr.toFixed(2);
+            document.getElementById("sygs").innerText = sygs.toFixed(2);
+            document.getElementById("gsgs").innerText = gsgs.toFixed(2);
+            document.getElementById("sy1gs").innerText = sy1gs.toFixed(2);
+            document.getElementById("gjjgr").innerText = gjjgr.toFixed(2);
+            document.getElementById("gjjgs").innerText = gjjgs.toFixed(2);
+            document.getElementById("grhj").innerText = grhj.toFixed(2);
+            document.getElementById("gshj").innerText = gshj.toFixed(2);
+            document.getElementById("ze").innerText = ze.toFixed(2);
+        }
+
+        function resetFields() {
+            document.getElementById("salary").value = "";
+            const ids = ["ylgr", "ylgs", "ybgr", "ybgs", "sygr", "sygs", "gsgs", "sy1gs", "gjjgr", "gjjgs", "grhj", "gshj", "ze"];
+            ids.forEach(id => {
+                document.getElementById(id).innerText = "0.00";
+            });
+            if (modalOverlay.classList.contains('visible')) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
 </html>
